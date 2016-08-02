@@ -1,0 +1,36 @@
+#include <iostream>
+#include <cstdlib>
+
+using namespace std;
+
+const int MAX_LENGTH = 30;
+
+double convertStringToDouble(char*);
+
+int main()
+{
+	char array[MAX_LENGTH];
+	char* cptr = array;
+	
+	//cptr = array;
+
+	cin >> cptr;
+	//cout << *cptr << endl;
+	//cout << *cptr << endl;
+
+	/*while(*cptr != '\0')
+	{
+		cout << *cptr;
+		cptr++;
+	}*/
+
+	int i = (int)convertStringToDouble(cptr);
+	cout << i << endl;
+
+	return 0;
+}
+
+double convertStringToDouble(char* c)
+{
+	return atof(c);
+}
