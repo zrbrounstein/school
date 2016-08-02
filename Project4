@@ -1,0 +1,223 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <iomanip>
+
+using namespace std;
+
+const int MAX_STRING_LENGTH = 30;
+const int TEMP_STORAGE = 20;
+const int MAX_CODE = 100;
+
+struct pieces
+{
+	char* word;
+	int jump;
+};
+
+struct clue
+{
+	int num_words;
+	int num_keys;
+};
+
+double convertStringToDouble(char*);
+
+void strcpy(char*, char*);
+
+int strlen(char*);
+
+void strconcat(char*, char*);
+
+int main()
+{	
+	//File variables
+	char* finptr;
+	finptr = new char[MAX_STRING_LENGTH];
+
+	char* TEMP_ARRAY;
+	TEMP_ARRAY = new char[TEMP_STORAGE];
+	
+	clue clues;
+	
+	//Begin reading in from a file
+	cout << endl << "What is the name of the input file?: ";
+	cin >> finptr;
+	
+	ifstream myfile;
+	myfile.open(finptr);
+	
+	//This allows the program to know how many words and keys there are
+	myfile >> TEMP_ARRAY;
+	clues.num_words = (int)convertStringToDouble(TEMP_ARRAY);
+	myfile >> TEMP_ARRAY;
+	clues.num_keys = (int)convertStringToDouble(TEMP_ARRAY);
+	
+	//dynamically allocated a pieces structure array
+	pieces* raw;
+	raw = new pieces[clues.num_words];
+	pieces* rawhome = raw;
+	
+	//each word and jump value is stored, with the words being exactly the size needed
+	for(int i = 0; i < clues.num_words; i++)
+	{
+		myfile >> TEMP_ARRAY;
+		int j = strlen(TEMP_ARRAY);
+		(*raw).word = new char[j+1];
+		strcpy((*raw).word, TEMP_ARRAY);
+		myfile >> TEMP_ARRAY;
+		(*raw).jump = (int)convertStringToDouble(TEMP_ARRAY);
+		raw++;
+		
+	}
+	
+	//the key array is dynamically allocated
+	int* keyptr;
+	keyptr = new int[clues.num_keys];
+	int* keyptrhome = keyptr;
+	
+	for(int i = 0; i < clues.num_keys; i++)
+	{
+		myfile >> TEMP_ARRAY;
+		*keyptr = (int)convertStringToDouble(TEMP_ARRAY);
+		keyptr++;
+	}
+
+	myfile.close();
+
+	char* cipher;
+	cipher = new char[MAX_CODE];
+	char* cipherhome = cipher;
+
+	for(int i = 0; i < MAX_CODE; i++)
+	{
+		*cipher = '\0';
+	}
+
+	cipher = cipherhome;
+	raw = rawhome;	
+	keyptr = keyptrhome;
+
+	int count;
+
+	//this loop is the algorithm for searching through the cipher
+	for(int i = 0; i < clues.num_keys; i++)
+	{
+		count = 0;
+		for(int j = 0; j < *keyptr; j++)
+		{
+			
+			raw++;
+			count++;
+		}
+		while((*raw).jump != 0)
+		{
+			int word_jump = (*raw).jump;
+			for(int j = 0; j < word_jump; j++)
+			{
+				
+				count++;
+				raw++;
+		
+				//in case words are at the end, there is a loop to go back to the beginning of the words
+				if(count == clues.num_words)
+				{
+					raw = rawhome;
+					count = 0;
+				}
+			}
+		}
+
+		//concatenates the found words into the final solved array
+		strconcat(cipher, (*raw).word);
+
+		keyptr++;
+
+		raw = rawhome;
+	}
+
+	//prints out the solved cipher
+	cipher = cipherhome;
+	cout << endl << cipher;
+
+	//sends all the pointers to home
+	raw = rawhome;
+	cipher = cipherhome;
+	keyptr = keyptrhome;
+
+	//from here until the return, all memory leaks are taken care of
+	delete[] finptr;
+	finptr = NULL;
+
+
+	for(int i = 0; i < clues.num_words; i++)
+	{
+		delete[] (*raw).word;
+		raw++;
+	}
+
+	raw = rawhome;
+	delete[] raw;
+	raw = NULL;
+
+	delete[] keyptr;
+	keyptr = NULL;
+
+	delete[] TEMP_ARRAY;
+	TEMP_ARRAY = NULL;
+
+	delete[] cipher;
+	cipher = NULL;
+
+	cout << endl << endl;
+
+	return 0;
+}
+
+double convertStringToDouble(char* c)
+{
+	return atof(c);
+}
+
+void strcpy(char* dest, char* source)
+{
+	while(*source != '\0')
+	{
+		*dest = *source;
+		dest++;
+		source++;
+	}
+	*dest = '\0';
+}
+
+int strlen(char* array)
+{
+	int k = 0;
+	
+	while (*array != '\0')
+	{
+		k++;
+		array++;
+	}
+
+	return k;
+}
+
+void strconcat(char* dest, char* source)
+{
+	while(*dest != '\0')
+	{
+		//cout << *dest;
+		dest++;
+	}
+	while(*source != '\0')
+	{
+		//cout << *dest << " " << *source;
+		*dest = *source;
+		dest++;
+		source++;
+	}
+	*dest = ' ';
+	dest++;
+	*dest = '\0';
+}
