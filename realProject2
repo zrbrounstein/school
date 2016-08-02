@@ -1,0 +1,260 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <iomanip>
+
+using namespace std;
+
+#define MAX_CARS 10
+#define MAX_STRING_LENGTH 30
+#define MAX_ROW_LENGTH 50
+
+struct car
+{
+	char make[MAX_STRING_LENGTH];
+	char model[MAX_STRING_LENGTH];
+	int year;
+	float price;
+	bool available;
+};
+
+void printcar(car s);
+
+void printcarstruct(car s[MAX_CARS]);
+
+int strlen(char array[MAX_STRING_LENGTH]);
+
+void printChararray(char str[]);
+
+void menu(int& selection);
+
+void inputfile(char userinputfile[MAX_STRING_LENGTH], car output[MAX_CARS]);
+
+int convertCharToInt(char c);
+
+double convertStringToDouble(char[]);
+
+void rentalchoose(int& rentoption);
+
+void rentalcost(int option, car s[]);
+
+int findmax(car s[]);
+
+void expensive(car s[], int n);
+
+void printavailable(car s[]);
+
+int main()
+{
+	//Menu variables
+	int menuoption, rentaloption;
+	bool finished = false;
+
+	//file variable
+	char infile[MAX_STRING_LENGTH];
+
+	car rental[MAX_CARS];
+
+	do
+	{
+		menu(menuoption);
+		
+		switch(menuoption)
+		{
+			case 1:
+				inputfile(infile, rental);
+				break;
+
+			case 2:
+				cout << "Here is all the information: " << endl;
+				
+				printcarstruct(rental);
+				break;
+
+			case 3:				
+				rentalchoose(rentaloption);
+
+				cout << endl;
+			
+				rentalcost(rentaloption, rental);					
+				break;
+
+			case 4:
+				int m;
+				m = findmax(rental);
+
+				expensive(rental, m);
+				break;
+
+			case 5:
+				printavailable(rental);
+				break;
+
+			case 6:
+				finished = true;
+				break;
+
+			default:
+				cout << "Unrecognized Option " << menuoption << endl;
+				break;
+		}
+	}
+
+	while(!finished);
+
+	return 0;
+}
+
+void printcar(car s)
+{		
+	cout << s.year << " ";
+	printChararray(s.make);
+	cout << ' ';	
+	printChararray(s.model);
+	cout << " $";
+	cout << s.price;
+	cout << ' ';
+	cout << s.available;
+}
+
+void printcarstruct(car s[MAX_CARS])
+{
+	for (int i = 0; i < MAX_CARS; i++)
+	{
+		cout << endl;
+		cout << "[" << i+1 << "] ";
+		printcar(s[i]);
+	}
+}
+
+int strlen(char str[])
+{
+	int k = 0;
+	
+	while (str[k] != '\0')
+	{
+		k++;
+	}
+
+	return k;
+}
+
+void printChararray(char str[])
+{
+	int length = strlen(str);
+
+	for (int i = 0; i < length; i++)
+	{
+		cout << str[i];
+	}
+}
+
+void menu(int& option)
+{
+	cout << endl << endl << "Welcome to the Rental Car Program!" << endl;
+	cout << "===================================" << endl << endl;
+	cout << "Please select an option: " << endl << endl;
+	cout << "1. Read information from a file" << endl;
+	cout << "2. Print out data for every rental car" << endl;
+	cout << "3. Estimate rental cost" << endl;
+	cout << "4. Find the most expensive rental car" << endl;
+	cout << "5. Print out only the available rental cars" << endl;
+	cout << "6. Quit" << endl << endl;
+
+	cout << "Option: ";
+	cin >> option;
+}
+
+void inputfile(char userinputfile[MAX_STRING_LENGTH], car output[MAX_CARS])
+{
+	//Ask the user for the input file and the program reads in the information and creates an array	
+
+	cout << endl << "What is the name of the input file?" << endl;
+	cin >> userinputfile;
+
+	//Read from infile and make a list
+
+	ifstream myfile;
+	myfile.open(userinputfile);
+	
+	for (int i = 0; i < MAX_CARS; i++)
+	{
+		char tempstryear[MAX_STRING_LENGTH], tempstrprice[MAX_STRING_LENGTH], tempstravailable;
+
+		myfile >> tempstryear;
+		output[i].year = (int)convertStringToDouble(tempstryear);
+		myfile >> output[i].make;
+		myfile >> output[i].model;
+		myfile >> tempstrprice;
+		output[i].price = (float)convertStringToDouble(tempstrprice);
+		myfile >> tempstravailable;
+		output[i].available = !!convertCharToInt(tempstravailable);		
+	}
+	myfile.close();
+}
+
+int convertCharToInt(char c)
+{
+	return c - '0';
+}
+
+double convertStringToDouble(char cstr[MAX_STRING_LENGTH])
+{
+	return atof(cstr);
+}
+
+void rentalchoose(int& rentoption)
+{
+	cout << endl << endl << "Please choose the rental car option number you would like to explore: ";
+	cin >> rentoption;
+}
+
+void rentalcost(int option, car s[])
+{
+	int days;
+	float totalprice;
+
+	cout << "You have chosen the " << s[option-1].year << " " << s[option-1].make << " " << s[option-1].model << "." << endl << endl;
+	cout << "This vehicle costs $" << setprecision (2) << fixed << s[option-1].price << " per day to rent." << endl << endl;
+	cout << "How many days would you like to rent the " << s[option-1].make << " " << s[option-1].model << "?" << endl << endl;
+	cin >> days;
+		
+	totalprice = days * s[option-1].price;
+
+	cout << endl << "That venture is going to cost $" << setprecision (2) << fixed << totalprice << "." << endl << endl;
+}
+
+int findmax(car s[])
+{
+	int max_car;	
+	int max = 0;
+
+	for (int i = 0; i < MAX_CARS; i++)
+	{
+		if (s[i].price > max)
+		{
+			max = s[i].price;
+			max_car = i;
+		}
+	}
+
+	return max_car;
+}
+
+void expensive(car s[], int n)
+{
+	cout << endl << endl << "The most expensive rental car is the " << s[n].year << " "<< s[n].make << " " << s[n].model;
+	cout << endl << "at a price of $" << setprecision (2) << fixed << s[n].price << " per day." << endl << endl;
+}
+
+void printavailable(car s[])
+{
+	cout << endl << "The vehicles that are availabe are the:" << endl << endl;
+	for (int i = 0; i < MAX_CARS; i++)
+	{
+		if (s[i].available)
+		{
+			cout << "[" << i+1 << "] " << s[i].year << " " << s[i].make << " " << s[i].model << endl;
+		}
+	}
+}
