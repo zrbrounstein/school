@@ -1,0 +1,243 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <iomanip>
+
+using namespace std;
+
+const int MAX_STRING_LENGTH = 30;
+const int TEMP_STORAGE = 20;
+const int MAX_CODE = 100;
+
+struct pieces
+{
+	char* word;
+	int jump;
+};
+
+struct clue
+{
+	int num_words;
+	int num_keys;
+};
+
+int convertCharToInt(char);
+
+double convertStringToDouble(char*);
+
+void strcpy(char*, char*);
+
+int strlen(char*);
+
+bool strcmp(char*, char*);
+
+void strconcat(char*, char*);
+
+int main()
+{	
+	//File variables
+	char* finptr;
+	finptr = new char[MAX_STRING_LENGTH];
+	
+	clue clues;
+	
+	//Begin reading in from a file
+	cout << "What is the name of the input file?: ";
+	cin >> finptr;
+	
+	ifstream myfile;
+	myfile.open(finptr);
+	
+	char wordnum1, wordnum2, keynum1, keynum2, jumpnum;
+	
+	myfile >> wordnum1 >> wordnum2 >> keynum1 >> keynum2;
+	clues.num_words = (convertCharToInt(wordnum1) * 10) + (convertCharToInt(wordnum2));
+	clues.num_keys = (convertCharToInt(keynum1) * 10) + (convertCharToInt(keynum2));
+	
+	//To check that the number of words and keys are being read
+	
+	pieces* raw;
+	raw = new pieces[clues.num_words];
+	pieces* rawhome = raw;
+
+	char* TEMP_ARRAY;
+	TEMP_ARRAY = new char[TEMP_STORAGE];
+	
+	for(int i = 0; i < clues.num_words; i++)
+	{
+		myfile >> TEMP_ARRAY >> jumpnum;
+		int j = strlen(TEMP_ARRAY);
+		(*raw).word = new char[j+1];
+		strcpy((*raw).word, TEMP_ARRAY);
+		(*raw).jump = convertCharToInt(jumpnum);
+		raw++;
+		
+	}
+	
+	int* keyptr;
+	keyptr = new int[clues.num_keys];
+	int* keyptrhome = keyptr;
+	
+	for(int i = 0; i < clues.num_keys; i++)
+	{
+		myfile >> TEMP_ARRAY;
+		*keyptr = (int)convertStringToDouble(TEMP_ARRAY);
+		keyptr++;
+	}
+
+	myfile.close();
+
+	char* cipher;
+	cipher = new char[MAX_CODE];
+	char* cipherhome = cipher;
+
+	for(int i = 0; i < MAX_CODE; i++)
+	{
+		*cipher = '\0';
+	}
+
+	cipher = cipherhome;
+	raw = rawhome;	
+	keyptr = keyptrhome;
+
+	int count;
+
+	for(int i = 0; i < clues.num_keys; i++)
+	{
+		count = 0;
+		for(int j = 0; j < *keyptr; j++)
+		{
+			
+			raw++;
+			count++;
+		}
+		while((*raw).jump != 0)
+		{
+			int word_jump = (*raw).jump;
+			for(int j = 0; j < word_jump; j++)
+			{
+				
+				count++;
+				raw++;
+		
+				if(count == clues.num_words)
+				{
+					raw = rawhome;
+					count = 0;
+				}
+			}
+		}
+
+
+		strconcat(cipher, (*raw).word);
+
+		keyptr++;
+
+		raw = rawhome;
+	}
+	cipher = cipherhome;
+	cout << endl << cipher;
+
+	raw = rawhome;
+	cipher = cipherhome;
+	keyptr = keyptrhome;
+
+	delete[] finptr;
+	finptr = NULL;
+
+
+	for(int i = 0; i < clues.num_words; i++)
+	{
+		delete[] (*raw).word;
+		raw++;
+	}
+
+	raw = rawhome;
+	delete[] raw;
+	raw = NULL;
+
+	delete[] keyptr;
+	keyptr = NULL;
+
+	delete[] TEMP_ARRAY;
+	TEMP_ARRAY = NULL;
+
+	delete[] cipher;
+	cipher = NULL;
+
+	cout << endl << endl;
+
+	return 0;
+}
+
+int convertCharToInt(char c)
+{
+	return c - '0';
+}
+
+double convertStringToDouble(char* c)
+{
+	return atof(c);
+}
+
+void strcpy(char* dest, char* source)
+{
+	while(*source != '\0')
+	{
+		*dest = *source;
+		dest++;
+		source++;
+	}
+	*dest = '\0';
+}
+
+int strlen(char* array)
+{
+	int k = 0;
+	
+	while (*array != '\0')
+	{
+		k++;
+		array++;
+	}
+
+	return k;
+}
+
+bool strcmp(char* str1, char* str2)
+{
+	bool compare = true;
+   
+    while((*str1 != '\0') && (*str2 != '\0'))
+    {
+         if(*str1 != *str2)
+         {
+             compare = false;
+             break;
+         }
+  
+ 		str1++;
+ 		str2++;
+    }
+
+   return compare;
+}
+
+void strconcat(char* dest, char* source)
+{
+	while(*dest != '\0')
+	{
+		//cout << *dest;
+		dest++;
+	}
+	while(*source != '\0')
+	{
+		//cout << *dest << " " << *source;
+		*dest = *source;
+		dest++;
+		source++;
+	}
+	*dest = ' ';
+	dest++;
+	*dest = '\0';
+}
