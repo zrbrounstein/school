@@ -1,0 +1,224 @@
+#include<iostream>
+#include<fstream>
+
+using namespace std;
+
+void printlist(char list[][100]);
+
+void printreducedlist(char list[][100], int numlist[]);
+
+int strlen(char array[]);
+
+void strcpy(char source[], char dest[]);
+
+int main()
+{
+	//Ask the user for input file and output file names
+
+	char infile[30], outfile[30], namelist[13][100], sortednamelist[13][100]; 
+	int namelength[13];	
+
+	cout << endl << "Hello!" << endl << endl << "What is the name of the input file?" << endl;
+	cin >> infile;
+
+	cout << endl << endl;
+	
+	cout << "What is the name of the output file?" << endl;
+	cin >> outfile;
+
+	//Read from infile and make a list
+
+	ifstream myfile;
+	myfile.open(infile);
+	
+	for (int i = 0; i < 13; i++)
+	{
+		myfile >> namelist[i];
+	}
+	myfile.close();
+
+	//printlist(namelist);
+
+	for (int i = 0; i < 13; i++)
+	{
+		strcpy(namelist[i],sortednamelist[i]);
+	}
+
+	//printlist(sortednamelist);
+
+	cout << endl << endl;
+
+	for (int i = 0; i < 13; i++)
+	{
+		int namelen = strlen(namelist[i]);
+		namelength[i] = namelen;
+	}
+
+	cout << "Unsorted Names" << endl;
+	cout << "====================" << endl << endl;
+
+	printreducedlist(namelist, namelength); //prints out unsorted list
+
+	//Sort through the list of names
+	
+	for (int i = 0; i < 12; i++)
+	{
+		for (int j = (i+1); j < 13; j++)
+		{
+			char tempname[100];
+			int tempnum;
+
+			if (namelist[j][0] <= namelist[i][0]) //checks first letters
+			{
+				if (namelist[j][0] < namelist[i][0])
+				{
+					strcpy(namelist[i],tempname);
+					tempnum = namelength[i];
+					strcpy(namelist[j],namelist[i]);
+					namelength[i] = namelength[j];
+					strcpy(tempname,namelist[j]);
+					namelength[j] = tempnum;
+				}	
+					
+				else
+				{
+					if (namelist[j][1] <= namelist[i][1]) //checks second letters
+					{
+						if (namelist[j][1] < namelist[i][1])
+						{
+							strcpy(namelist[i],tempname);
+							tempnum = namelength[i];
+							strcpy(namelist[j],namelist[i]);
+							namelength[i] = namelength[j];
+							strcpy(tempname,namelist[j]);
+							namelength[j] = tempnum;
+						}	
+					
+						else
+						{
+							if (namelist[j][2] <= namelist[i][2]) //checks third letters
+							{
+								if (namelist[j][2] < namelist[i][2])
+								{
+									strcpy(namelist[i],tempname);
+									tempnum = namelength[i];
+									strcpy(namelist[j],namelist[i]);
+									namelength[i] = namelength[j];
+									strcpy(tempname,namelist[j]);
+									namelength[j] = tempnum;
+								}
+
+								else
+								{
+									if (namelist[j][3] <= namelist[i][3]) //checks fourth letters
+									{
+										if (namelist[j][3] < namelist[i][3])
+										{
+											strcpy(namelist[i],tempname);
+											tempnum = namelength[i];
+											strcpy(namelist[j],namelist[i]);
+											namelength[i] = namelength[j];
+											strcpy(tempname,namelist[j]);
+											namelength[j] = tempnum;
+										}
+
+										else
+										{
+											if (namelist[j][4] <= namelist[i][4]) //checks fifth letters
+											{
+												if (namelist[j][4] < namelist[i][4])
+												{
+													strcpy(namelist[i],tempname);
+													tempnum = namelength[i];
+													strcpy(namelist[j],namelist[i]);
+													namelength[i] = namelength[j];
+													strcpy(tempname,namelist[j]);
+													namelength[j] = tempnum;
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}	
+		}
+	}
+	
+	cout << endl << endl << "Sorted Names" << endl;
+	cout << "====================" << endl << endl;
+
+	printreducedlist(namelist, namelength); //prints sorted list
+
+	cout << endl;
+
+	//printlist(namelist);
+
+	//Read to outfile
+
+	ofstream donefile;
+	donefile.open(outfile);
+	
+	for (int i = 0; i < 13; i++)
+	{
+		for(int j = 0; j < namelength[i]; j++)
+		{
+			donefile << namelist[i][j];
+			if (j == (namelength[i] - 1))
+			{
+				donefile << endl;
+			}
+		}
+	}
+	donefile.close();
+
+	return 0;
+}
+
+void printlist(char list[][100])
+{
+	for (int i = 0; i < 13; i++)
+	{
+		cout << list[i] << endl;
+	}
+}
+
+void printreducedlist(char list[][100], int numlist[])
+{
+	for (int i = 0; i < 13; i++)
+	{
+		for (int j = 0; j < numlist[i]; j++)
+		{
+			cout << list[i][j];
+			if (j == (numlist[i] - 1))
+			{
+				cout << endl;
+			}
+		}
+	}
+}
+
+int strlen(char array[])
+{
+	int k = 0;
+	
+	while (array[k] != '\0')
+	{
+		k++;
+	}
+
+	return k;
+}
+
+void strcpy(char source[], char dest[])
+{
+	int count = 0;
+
+	while (source[count] != '\0')
+	{
+		dest[count] = source[count];
+		count += 1;
+	}
+}
