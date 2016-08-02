@@ -1,0 +1,521 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <iomanip>
+
+using namespace std;
+
+const int MAX_STRING_LENGTH = 30;
+const int MAX_CARS = 5;
+const int MAX_AGENCIES = 3;
+const int ZIPCODE_LENGTH = 5;
+
+struct car
+{
+	char make[MAX_STRING_LENGTH];
+	char model[MAX_STRING_LENGTH];
+	int year;
+	float price;
+	bool available;
+};
+
+struct agency
+{
+	char location[MAX_STRING_LENGTH];
+	int zipcode[ZIPCODE_LENGTH];
+	car inventory[MAX_CARS];
+};
+
+void menu(int& selection); //overall menu for choosing options
+
+void inputfile(char*, agency*); //reads a file into the program and stores the information via pointers
+
+int convertCharToInt(char); //given a char, the return is the associated integer
+
+double convertStringToDouble(char*); //given an array or char pointers, returns the associated double
+
+void printAgency(agency*); //prints the data type agency
+
+bool strcmp(char*, char*); //string compare function 
+
+void rentallocation(agency*, char*); //allows the user to choose a rental location and its vehicles
+
+void findmax(agency*); //finds the most expensive car from each agency as well as the most expensive car overall
+
+void printavailable(agency*); //prints the available vehicles from each agency
+
+int main()
+{
+	//Menu variables
+	int menuoption;
+	char agencylocation[MAX_STRING_LENGTH];
+	bool finished = false;
+
+	//file variable
+	char infile[MAX_STRING_LENGTH];
+	char* inptr;
+
+	inptr = infile;
+
+	agency agent[MAX_AGENCIES];
+	car rental[MAX_CARS];
+	
+	agency* aptr = agent;
+
+	do
+	{
+		menu(menuoption);
+		
+		switch(menuoption)
+		{
+			case 1:
+				inputfile(infile, aptr);
+				aptr = agent;
+
+				break;
+
+			case 2:
+				cout << "Here is all the information: " << endl << endl << endl;
+			
+				printAgency(aptr);
+			
+				break;
+
+			case 3:				
+								
+				rentallocation(aptr, agencylocation);
+									
+				break;
+
+			case 4:
+				findmax(aptr);
+				break;
+
+			case 5:
+				printavailable(aptr);
+				break;
+
+			case 6: //this exits the program
+				finished = true;
+				break;
+
+			default:
+				cout << "Unrecognized Option " << menuoption << endl;
+				break;
+		}
+	}
+
+	while(!finished);
+
+	return 0;
+}
+
+void menu(int& option)
+{
+	cout << endl << endl << "Welcome to the Rental Car Program!" << endl;
+	cout << "===================================" << endl << endl;
+	cout << "Please select an option: " << endl << endl;
+	cout << "1. Read information from a file" << endl;
+	cout << "2. Print out data for every rental car" << endl;
+	cout << "3. Estimate rental cost" << endl;
+	cout << "4. Find the most expensive rental car" << endl;
+	cout << "5. Print out only the available rental cars" << endl;
+	cout << "6. Quit" << endl << endl;
+
+	cout << "Option: ";
+	cin >> option;
+}
+
+void inputfile(char* userinputfile, agency* total)
+{
+	agency* Agent = total;
+	car* carptr = (*Agent).inventory;
+
+	int* izipptr;
+
+	//Ask the user for the input file and the program reads in the information and creates an array	
+
+	cout << endl << "What is the name of the input file?" << endl;
+	cin >> userinputfile;
+
+	//Read from infile and make a list
+
+	ifstream myfile;
+	myfile.open(userinputfile);
+	
+	for(int i = 0; i < MAX_AGENCIES; i++)
+	{
+		char charzip;
+		izipptr = (*Agent).zipcode;	
+
+		myfile >> (*Agent).location;
+		
+		for(int k = 0; k < ZIPCODE_LENGTH; k++)
+		{
+			myfile >> charzip;
+			*izipptr = convertCharToInt(charzip); //zipcode pointer obtains individual zip code array elements
+			izipptr++;
+		}
+		
+
+		for(int j = 0; j < MAX_CARS; j++)
+		{
+			char charyear[4];
+			char* cyearptr = charyear;
+
+			char charprice[10];
+			char* cpriceptr = charprice;
+
+			char charavailable[2];
+			char* cavailableptr = charavailable;
+
+			myfile >> cyearptr;
+			(*carptr).year = atoi(cyearptr);
+
+			myfile >> (*carptr).make;
+			myfile >> (*carptr).model;
+
+			myfile >> cpriceptr;
+			(*carptr).price = (float)convertStringToDouble(cpriceptr);
+
+			myfile >> cavailableptr;
+			(*carptr).available = !!(int)convertStringToDouble(cavailableptr); //converts double to int to boolean
+	
+			carptr++;	
+		}
+
+		Agent++;
+		
+		carptr = (*Agent).inventory;		
+	}		
+
+	myfile.close();
+}
+
+int convertCharToInt(char c)
+{
+	return c - '0';
+}
+
+double convertStringToDouble(char* c)
+{
+	return atof(c);
+}
+
+void printAgency(agency* total)
+{
+	agency* Agent = total;
+	car* carptr = (*Agent).inventory;
+
+	for(int i = 0; i < MAX_AGENCIES; i++)
+	{
+		int* izipptr = (*Agent).zipcode;
+		cout << (*Agent).location << " ";
+
+		for(int k = 0; k < ZIPCODE_LENGTH; k++)
+		{
+			cout << *izipptr;
+			izipptr++;
+		} 
+		cout << endl << endl;			
+		
+		for(int j = 0; j < MAX_CARS; j++)
+		{
+			cout << (*carptr).year << " " << (*carptr).make << " " << (*carptr).model << "  Price: $" << setprecision (2) << fixed << (*carptr).price << "   ";
+			cout << "Available: ";
+			if((*carptr).available)
+			{
+				cout << "Yes" << endl;
+			}
+			else
+			{
+				cout << "No" << endl;
+			}
+
+			carptr++;
+		}
+		
+		cout << endl << endl;
+
+		Agent++;
+		carptr = (*Agent).inventory;
+	}
+}
+
+bool strcmp(char* str1, char* str2)
+{
+	bool compare = true;
+   
+    while((*str1 != '\0') && (*str2 != '\0'))
+    {
+         if(*str1 != *str2)
+         {
+             compare = false;
+             break;
+         }
+  
+ 		str1++;
+ 		str2++;
+    }
+
+   return compare;
+}
+
+void rentallocation(agency* total, char* option)
+{
+	agency* Agent = total;
+	car* carptr;
+
+	cout << endl << endl << "Please choose the rental car location you would like to explore: ";
+	cin >> option;
+
+	bool k = false;
+	int count = 0;
+	int rentaloption;
+	int days;
+	float totalprice;
+
+	while(!k)
+	{
+		k = strcmp((*Agent).location, option);
+		count++;
+
+		Agent++;
+	}
+
+	Agent--;
+
+	carptr = (*Agent).inventory;
+
+	switch(count)
+		{
+			case 1:
+				cout << "You chose the " << (*Agent).location << " location as your rental option." << endl;
+				cout << "The cars at this location are:" << endl;
+				
+				for(int j = 0; j < MAX_CARS; j++)
+				{
+					cout << "[" << j+1 << "]" << (*carptr).year << " " << (*carptr).make << " " << (*carptr).model  << " " << endl;
+
+					carptr++;
+				}
+				cout << endl << endl << "Please choose the rental car option number you would like to explore: ";
+				cout << endl << endl;
+
+				cin >> rentaloption;
+
+				break;
+
+			case 2:
+				cout << "You chose the " << (*Agent).location << " location as your rental option." << endl;
+				cout << "The cars at this location are:" << endl;
+				
+				for(int j = 0; j < MAX_CARS; j++)
+				{
+					cout << "[" << j+1 << "]" << (*carptr).year << " " << (*carptr).make << " " << (*carptr).model  << " " << endl;
+
+					carptr++;
+				}
+				cout << endl << endl << "Please choose the rental car option number you would like to explore: ";
+				cout << endl << endl;
+
+				cin >> rentaloption;
+				break;
+
+			case 3:
+				cout << "You chose the " << (*Agent).location << " location as your rental option." << endl;
+				cout << "The cars at this location are:" << endl;
+				
+				for(int j = 0; j < MAX_CARS; j++)
+				{
+					cout << "[" << j+1 << "]" << (*carptr).year << " " << (*carptr).make << " " << (*carptr).model  << " " << endl;
+
+					carptr++;
+				}
+				cout << endl << endl << "Please choose the rental car option number you would like to explore: ";
+				cout << endl << endl;
+
+				cin >> rentaloption;
+				break;
+
+			default:
+				cout << "Unrecognized option";
+				cout << endl << endl;
+				break;
+			}
+
+	carptr = (*Agent).inventory;
+
+	for(int j = 0; j < (rentaloption-1); j++)
+	{
+		carptr++;
+	}
+
+	cout << "You have chosen the " << (*carptr).year << " " << (*carptr).make << " " << (*carptr).model << "." << endl << endl;
+	cout << "This vehicle costs $" << setprecision (2) << fixed << (*carptr).price << " per day to rent." << endl << endl;
+	cout << "How many days would you like to rent the " << (*carptr).make << " " << (*carptr).model << "?" << endl << endl;
+	cin >> days;
+		
+	totalprice = days * (*carptr).price;
+
+	cout << endl << "That venture is going to cost $" << setprecision (2) << fixed << totalprice << "." << endl << endl;
+}
+
+void findmax(agency* total)
+{
+	agency* Agent = total;
+	car* carptr = (*Agent).inventory;
+	int max_car1, max_car2, max_car3;
+	int mcar, carmax, agencymax;	
+	float max = 0;
+
+	for (int i = 0; i < MAX_CARS; i++) //this is a whole lot of resetting the pointers to the original locations in memory
+	{
+		if ((*carptr).price > max)
+		{
+			max = (*carptr).price;
+			mcar = max;
+			max_car1 = i;
+			agencymax = 0;
+			carmax = i;
+
+		}
+		carptr++;
+	}
+
+	max = 0;
+	Agent++;
+	carptr = (*Agent).inventory;
+
+	for (int i = 0; i < MAX_CARS; i++)
+	{
+		if ((*carptr).price > max)
+		{
+			max = (*carptr).price;
+			max_car2 = i;
+
+			if(max > mcar)
+			{
+				mcar = max;
+				agencymax = 1;
+				carmax = i;
+			}
+		}
+		carptr++;
+	}
+
+	max = 0;
+	Agent++;
+	carptr = (*Agent).inventory;
+
+	for (int i = 0; i < MAX_CARS; i++)
+	{
+		if ((*carptr).price > max)
+		{
+			max = (*carptr).price;
+			max_car3 = i;
+
+			if(max > mcar)
+			{
+				mcar = max;
+				agencymax = 2;
+				carmax = i;
+			}
+		}
+		carptr++;
+	}
+
+	Agent = total;
+	carptr = (*Agent).inventory;
+
+	cout << endl << endl << "The most expensive rental car from the " << (*Agent).location << " location is the ";
+	for(int i = 0; i < max_car1; i++)
+	{
+		carptr++;
+	}
+	cout << (*carptr).year << " "<< (*carptr).make << " " << (*carptr).model;
+
+	cout << endl << "at a price of $" << setprecision (2) << fixed << (*carptr).price << " per day." << endl << endl;
+
+	Agent++;
+	carptr = (*Agent).inventory;
+
+	cout << endl << endl << "The most expensive rental car from the " << (*Agent).location << " location is the ";
+	for(int i = 0; i < max_car2; i++)
+	{
+		carptr++;
+	}
+	cout << (*carptr).year << " "<< (*carptr).make << " " << (*carptr).model;
+
+	cout << endl << "at a price of $" << setprecision (2) << fixed << (*carptr).price << " per day." << endl << endl;
+
+	Agent++;
+	carptr = (*Agent).inventory;
+
+	cout << endl << endl << "The most expensive rental car from the " << (*Agent).location << " location is the ";
+	for(int i = 0; i < max_car3; i++)
+	{
+		carptr++;
+	}
+	cout << (*carptr).year << " "<< (*carptr).make << " " << (*carptr).model;
+
+	cout << endl << "at a price of $" << setprecision (2) << fixed << (*carptr).price << " per day." << endl << endl;
+
+	Agent = total;
+	for(int i = 0; i < agencymax; i++)
+	{
+		Agent++;
+	}
+
+	carptr = (*Agent).inventory;
+
+	for(int i = 0; i < carmax; i++)
+	{
+		carptr++;
+	}
+
+	cout << endl << endl << "The most expensive rental car comes from the " << (*Agent).location << " location and is the ";
+	cout << (*carptr).year << " "<< (*carptr).make << " " << (*carptr).model;
+
+	cout << endl << "at a price of $" << setprecision (2) << fixed << (*carptr).price << " per day." << endl << endl;
+}
+
+void printavailable(agency* total)
+{
+	agency* Agent = total;
+	car* carptr = (*Agent).inventory;
+
+	cout << endl << "The vehicles that are available from the " << (*Agent).location << " location are the:" << endl << endl;
+	for (int i = 0; i < MAX_CARS; i++)
+	{
+		if ((*carptr).available)
+		{
+			cout << "[" << i+1 << "] " << (*carptr).year << " " << (*carptr).make << " " << (*carptr).model << endl;
+		}
+		carptr++;
+	}
+	Agent++;
+	carptr = (*Agent).inventory;
+
+	cout << endl << "The vehicles that are available from the " << (*Agent).location << " location are the:" << endl << endl;
+	for (int i = 0; i < MAX_CARS; i++)
+	{
+		if ((*carptr).available)
+		{
+			cout << "[" << i+1 << "] " << (*carptr).year << " " << (*carptr).make << " " << (*carptr).model << endl;
+		}
+		carptr++;
+	}
+	Agent++;
+	carptr = (*Agent).inventory;
+
+	cout << endl << "The vehicles that are available from the " << (*Agent).location << " location are the:" << endl << endl;
+	for (int i = 0; i < MAX_CARS; i++)
+	{
+		if ((*carptr).available)
+		{
+			cout << "[" << i+1 << "] " << (*carptr).year << " " << (*carptr).make << " " << (*carptr).model << endl;
+		}
+		carptr++;
+	}
+}
